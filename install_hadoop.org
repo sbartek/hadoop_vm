@@ -1,0 +1,45 @@
+** Virtual Machine
+
+Go to top of virtual window, click on devices then select "Install
+Guest Additions" You will see a window pop up inside Ubuntu showing
+you that there are some new files mounted in a virtual CDROM
+drive. One of those files should be VBoxLinuxAdditions.run
+
+or sudo apt-get install virtualbox-guest-additions-iso
+
+The .iso file with an image of the OSE edition of the guest additions
+CD will install in the host directory:
+/usr/share/virtualbox/VBoxGuestAdditions.iso
+
+** Java
+
+https://www.digitaloceaan.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
+
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt update
+sudo apt install oracle-java8-installer
+
+sudo update-alternatives --config java
+
+sudo nano /etc/environment
+JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+source /etc/environment
+
+
+
+
+** Others
+
+*** R
+
+https://cran.r-project.org/bin/linux/ubuntu/README.html
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
+sudo add-apt-repository 'deb https://cloud.r-project.Borg/bin/linux/ubuntu yakkety/'
+sudo apt update
+sudo apt install r-base
+
+R CMD javareconf 
+R: install.packges('rJava')
+
+
