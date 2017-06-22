@@ -13,21 +13,229 @@ CD will install in the host directory:
 
 ** Java
 
-https://www.digitaloceaan.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04
-
 sudo add-apt-repository ppa:webupd8team/java
 sudo apt update
 sudo apt install oracle-java8-installer
 
 sudo update-alternatives --config java
 
-sudo nano /etc/environment
+sudo emacs /etc/environment
 JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 source /etc/environment
 
 
+** Hadoop
+
+Get binary from:
+http://hadoop.apache.org/releases.html
+
+wget http://apache.mirrors.tds.net/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gb
+tar -xzvf hadoop-2.7.3.tar.gz
+sudo mv hadoop-2.7.3 /usr/local/hadoop-2.7.3
+sudo ln -s /usr/local/hadoop-2.7.3 /usr/local/hadoop
+
+emacs /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+# The java implementation to use.
+# export JAVA_HOME=${JAVA_HOME}
+# export JAVA_HOME="/usr/lib/jvm/java-8-oracle/jre"
+# export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 
+*** Run Hadoop
+
+/usr/local/hadoop/bin/hadoop
+/usr/local/hadoop/bin/hadoop fs -ls
+/usr/local/hadoop/bin/hadoop fs -put file_name
+
+*** creating Hadoop  user
+
+sudo apt install openssh-server
+sudo addgroup hadoop
+sudo adduser --ingroup hadoop hduser
+
+su - hduser
+
+ssh-keygen -t rsa -P "" -f $HOME/.ssh/id_rsa
+cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+
+sudo chown hduser:hadoop /usr/local/hadoop-2.7.3/ -R
+
+*** localconfig
+
+in ~/.bashrc
+
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin
+# Some convenient aliases and functions for running Hadoop-related commands
+unalias fs &> /dev/null
+alias fs="hadoop fs"
+unalias hls &> /dev/null
+alias hls="fs -ls"
+
+** Hadoop Distributed File System (HDFS)
+
+*** set directory
+
+mkdir -p /usr/local/hadoop_store/hdfs/namenode
+mkdir: cannot create directory ‘/usr/local/hadoop_store’: Permission denied
+bartek@bartek-VirtualBox-U1704:~$ sudo mkdir -p /usr/local/hadoop_store/hdfs/namenode
+[sudo] password for bartek: 
+bartek@bartek-VirtualBox-U1704:~$ sudo chown hduser:hadoop /usr/local/hadoop_store/hdfs/namenode
+bartek@bartek-VirtualBox-U1704:~$ sudo mkdir -p /usr/local/hadoop_store/hdfs/datanode
+bartek@bartek-VirtualBox-U1704:~$ sudo chown hduser:hadoop /usr/local/hadoop_store/hdfs/datanode/
+bartek@bartek-VirtualBox-U1704:~$ 
+
+
+sudo mkdir -p /var/lib/hadoop/tmp
+sudo chown hduser:hadoop /var/lib/hadoop/tmp
+sudo chmod 750 /var/lib/hadoop/tmp
+
+in /usr/local/hadoop/etc/hadoop/core-site.xml
+
+<configuration>
+<property>
+  <name>hadoop.tmp.dir</name>
+  <value>/var/lib/hadoop/tmp</value>
+  <description>A base for other temporary directories.</description>
+</property>
+
+<property>
+  <name>fs.default.name</name>
+  <value>hdfs://localhost:54310</value>
+  <description>The name of the default file system.  A URI whose
+  scheme and authority determine the FileSystem implementation.  The
+  uri's scheme determines the config property (fs.SCHEME.impl) naming
+  the FileSystem implementation class.  The uri's authority is used to
+  determine the host, port, etc. for a filesystem.</description>
+</property>
+</configuration>
+
+cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
+/usr/local/hadoop/etc/hadoop/mapred-site.xml
+
+<configuration>
+<property>
+  <name>mapred.job.tracker</name>
+  <value>localhost:54311</value>
+  <description>The host and port that the MapReduce job tracker runs
+  at.  If "local", then jobs are run in-process as a single map
+  and reduce task.
+  </description>
+</property>
+</configuration>
+
+/usr/local/hadoop/etc/hadoop/hdfs-site.xml
+
+<configuration>
+<property>
+  <name>dfs.replication</name>
+  <value>1</value>
+  <description>Default block replication.
+  The actual number of replications can be specified when the file is created.
+  The default is used if replication is not specified in create time.
+  </description>
+</property>
+</configuration>
+
+
+/usr/local/hadoop/etc/hadoop/yarn-site.xml
+
+<configuration>
+
+   <property> 
+      <name>yarn.nodemanager.aux-services</name> 
+      <value>mapreduce_shuffle</value> 
+   </property>
+   
+</configuration>
+
+
+**** FORMAT!!! Be carefull
+As hduser:
+
+hdfs namenode -format
+
+**** Testing
+
+cp /usr/local/hadoop/lib/native/* /usr/local/hadoop/lib/
+/usr/local/hadoop/sbin/start-dfs.sh
+/usr/local/hadoop/sbin/start-yarn.sh
+
+go to
+http://localhost:50070/
+http://localhost:8088/
+
+Stop
+
+/usr/local/hadoop/sbin/stop-dfs.sh
+** Hive
+
+wget http://apache.rediris.es/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz
+tar -xzvf apache-hive-2.1.1-bin.tar.gz
+sudo mv apache-hive-2.1.1-bin /usr/local
+sudo ln -s /usr/local/apache-hive-2.1.1-bin /usr/local/hive
+
+** Derby
+
+cd ~
+$ wget http://archive.apache.org/dist/db/derby/db-derby-10.4.2.0/db-derby-10.4.2.0-bin.tar.gz
+
+**** more sofisticated
+
+
+# Set Hadoop-related environment variables
+export HADOOP_HOME=/usr/local/hadoop
+
+# Set JAVA_HOME (we will also configure JAVA_HOME directly for Hadoop later on)
+# export JAVA_HOME=/usr/lib/jvm/java-6-sun
+
+# Some convenient aliases and functions for running Hadoop-related commands
+unalias fs &> /dev/null
+alias fs="hadoop fs"
+unalias hls &> /dev/null
+alias hls="fs -ls"
+
+# If you have LZO compression enabled in your Hadoop cluster and
+# compress job outputs with LZOP (not covered in this tutorial):
+# Conveniently inspect an LZOP compressed file from the command
+# line; run via:
+#
+# $ lzohead /hdfs/path/to/lzop/compressed/file.lzo
+#
+# Requires installed 'lzop' command.
+#
+lzohead () {
+    hadoop fs -cat $1 | lzop -dc | head -1000 | less
+}
+
+# Add Hadoop bin/ directory to PATH
+export PATH=$PATH:$HADOOP_HOME/bin
+
+
+*** More config
+
+
+
+https://www.tutorialspoint.com/hive/hive_installation.htm
+
+~/.bashrc:
+
+export HADOOP_HOME=/usr/local/hadoop 
+export HADOOP_MAPRED_HOME=$HADOOP_HOME 
+export HADOOP_COMMON_HOME=$HADOOP_HOME 
+export HADOOP_HDFS_HOME=$HADOOP_HOME 
+export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native export
+PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+
+Now one can run hadoop just with 
+
+hadoop
+
+** HDFS
+
+http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node-cluster/
 ** Others
 
 *** R
@@ -43,3 +251,56 @@ R CMD javareconf
 R: install.packges('rJava')
 
 
+*** Emacs
+
+sudo add-apt-repository ppa:kelleyk/emacs
+sudo apt update
+sudo apt install emacs25
+
+*** ssh-server and key generator
+
+sudo apt install openssh-server
+ssh-keygen -t rsa -b 4096 -C "bartekskorulski@gmail.com" -P "" -f $HOME/.ssh/localhost_rsa
+cat $HOME/.ssh/localhost_rsa.pub >> $HOME/.ssh/authorized_keys
+
+in ~/.ssh/config
+
+Host localhost-personal
+ HostName localhost
+ IdentityFile ~/.ssh/localhost_rsa
+ User bartek
+
+**** Agent
+
+eval "$(ssh-agent -s)"
+ssh-add -K ~/.ssh/localhost_rsa
+
+**** Evaluating github
+
+ssh-add -l -E md5
+ssh -T git@github-scrm
+
+
+** Links
+
+- https://www.tutorialspoint.com/hive/hive_installation.ATM
+
+
+#HADOOP VARIABLES START                                                                                                                                       
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+export HADOOP_INSTALL=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_INSTALL/bin
+export PATH=$PATH:$HADOOP_INSTALL/sbin
+export HADOOP_MAPRED_HOME=$HADOOP_INSTALL
+export HADOOP_COMMON_HOME=$HADOOP_INSTALL
+export HADOOP_HDFS_HOME=$HADOOP_INSTALL
+export YARN_HOME=$HADOOP_INSTALL
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_INSTALL/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"
+#HADOOP VARIABLES END 
+
+https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-on-ubuntu-13-10
+
+
+hdfs dfs -mkdir /input
+hadoop fs -ls /
