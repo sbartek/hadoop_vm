@@ -245,7 +245,7 @@ http://www.michael-noll.com/tutorials/running-hadoop-on-ubuntu-linux-single-node
 https://cran.r-project.org/bin/linux/ubuntu/README.html
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E084DAB9
-sudo add-apt-repository 'deb https://cloud.r-project.Borg/bin/linux/ubuntu yakkety/'
+sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu yakkety/'
 sudo apt update
 sudo apt install r-base
 
