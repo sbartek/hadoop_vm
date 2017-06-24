@@ -252,6 +252,10 @@ sudo apt install r-base
 R CMD javareconf 
 R: install.packges('rJava')
 
+*** RStudio
+
+Problems:
+http://www.samhillman.com/2017-04-15-rstudio/
 
 *** Emacs
 
