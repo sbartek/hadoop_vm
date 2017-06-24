@@ -5,6 +5,8 @@ Guest Additions" You will see a window pop up inside Ubuntu showing
 you that there are some new files mounted in a virtual CDROM
 drive. One of those files should be VBoxLinuxAdditions.run
 
+**** Alternative aproach
+
 or sudo apt-get install virtualbox-guest-additions-iso
 
 The .iso file with an image of the OSE edition of the guest additions
